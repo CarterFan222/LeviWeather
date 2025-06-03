@@ -1,186 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LeviWeather</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f4f4f4;
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
+      overflow-x: hidden;
+      background: #111;
+      color: white;
+    }
+    .mountain-section {
+      height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      overflow-x: hidden;
-    }
-    .mountain-list {
-      width: 100%;
-      max-width: 480px;
-      margin-top: 20px;
-      padding: 10px;
-    }
-    .mountain {
-      background-color: #fff;
-      border-radius: 10px;
-      margin: 10px 0;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
+      text-align: center;
       position: relative;
+      transition: background 0.5s;
     }
-    .mountain h3 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
-    .mountain p {
-      font-size: 1.1rem;
-      color: #555;
-    }
-    .mountain .weather {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .weather-icon {
-      width: 50px;
-      height: 50px;
-    }
-    .animation {
+    .weather-animation {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      opacity: 0;
-      transition: opacity 0.5s ease;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
     }
-    .mountain.in-view .animation {
-      opacity: 1;
+    .mountain-info {
+      position: relative;
+      z-index: 1;
     }
-    .snowfall {
-      background: url('https://www.example.com/snowfall.png') center center no-repeat;
-      animation: snow 5s infinite linear;
+    .snowflake {
+      position: absolute;
+      color: white;
+      font-size: 1.5em;
+      animation: fall 5s linear infinite;
     }
-    @keyframes snow {
-      from {
-        top: -10%;
-      }
-      to {
-        top: 100%;
-      }
-    }
-    .mountain-daytime {
-      background-color: #87CEEB;
-    }
-    .mountain-nighttime {
-      background-color: #4B0082;
+    @keyframes fall {
+      0% { transform: translateY(-100px); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>LeviWeather</h1>
-    <p>Mountain Weather Data Sorted by Height</p>
-  </header>
-  
-  <div class="mountain-list">
-    <div class="mountain" id="everest">
-      <h3>Mount Everest</h3>
-      <p>Height: 8,848.86 m</p>
-      <div class="weather">
-        <p>Snowing</p>
-        <img class="weather-icon" src="https://www.example.com/snow-icon.png" alt="Snow">
-      </div>
-      <div class="animation snowfall"></div>
-    </div>
-    <div class="mountain" id="k2">
-      <h3>K2</h3>
-      <p>Height: 8,611 m</p>
-      <div class="weather">
-        <p>Clear Skies</p>
-        <img class="weather-icon" src="https://www.example.com/clear-icon.png" alt="Clear Skies">
-      </div>
-      <div class="animation"></div>
-    </div>
-    <!-- Add more mountains here... -->
-  </div>
+
+  <div id="app"></div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const mountains = document.querySelectorAll('.mountain');
-      const mountainList = document.querySelector('.mountain-list');
+    const mountains = [
+      { name: "Mount Everest", height: 8848, lat: 27.9881, lon: 86.925 },
+      { name: "K2", height: 8611, lat: 35.8808, lon: 76.5155 },
+      { name: "Kangchenjunga", height: 8586, lat: 27.7025, lon: 88.1475 },
+      { name: "Lhotse", height: 8516, lat: 27.9617, lon: 86.933 },
+      { name: "Makalu", height: 8485, lat: 27.8897, lon: 87.0883 },
+      { name: "Cho Oyu", height: 8188, lat: 28.0942, lon: 86.6608 },
+      { name: "Dhaulagiri", height: 8167, lat: 28.6967, lon: 83.4875 },
+      { name: "Manaslu", height: 8163, lat: 28.5497, lon: 84.5614 },
+      { name: "Nanga Parbat", height: 8126, lat: 35.2372, lon: 74.5892 },
+      { name: "Annapurna I", height: 8091, lat: 28.5958, lon: 83.8203 },
+      { name: "Gasherbrum I", height: 8080, lat: 35.7242, lon: 76.6961 },
+      { name: "Broad Peak", height: 8051, lat: 35.8147, lon: 76.565 },
+      { name: "Gasherbrum II", height: 8035, lat: 35.7581, lon: 76.6536 },
+      { name: "Shishapangma", height: 8027, lat: 28.3536, lon: 85.7792 },
+      { name: "Gyachung Kang", height: 7952, lat: 28.1064, lon: 86.7425 }
+    ];
 
-      // Listen for scroll event
-      mountainList.addEventListener('scroll', () => {
-        mountains.forEach(mountain => {
-          if (isInView(mountain)) {
-            mountain.classList.add('in-view');
-          } else {
-            mountain.classList.remove('in-view');
-          }
-        });
-      });
+    const app = document.getElementById('app');
 
-      // Check if mountain is in the viewport
-      function isInView(element) {
-        const rect = element.getBoundingClientRect();
-        return rect.top >= 0 && rect.bottom <= window.innerHeight;
+    function createSnow() {
+      const flake = document.createElement('div');
+      flake.className = 'snowflake';
+      flake.style.left = Math.random() * 100 + 'vw';
+      flake.style.animationDuration = 2 + Math.random() * 3 + 's';
+      flake.innerText = '❄';
+      return flake;
+    }
+
+    async function getWeather(lat, lon) {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day`);
+        const data = await res.json();
+        return data.current;
+      } catch {
+        return null;
       }
+    }
 
-      // Fetch weather data
-      // Dummy API call (replace with a real API or scraped data on your server)
-      async function getWeatherData(mountainId) {
-        const data = {
-          Everest: { weather: 'snowing', timeOfDay: 'night' },
-          K2: { weather: 'clear', timeOfDay: 'day' },
-          // Add more mock data here...
-        };
-        return data[mountainId] || { weather: 'unknown', timeOfDay: 'day' };
-      }
+    function getBackgroundColor(isDay) {
+      return isDay ? '#4facfe' : '#2c3e50';
+    }
 
-      // Update mountain weather information
-      async function updateMountainWeather(mountain) {
-        const mountainId = mountain.id;
-        const weatherData = await getWeatherData(mountainId);
-        
-        // Update UI based on weather
-        const weatherElement = mountain.querySelector('.weather p');
-        const iconElement = mountain.querySelector('.weather-icon');
-        const animationElement = mountain.querySelector('.animation');
-        
-        weatherElement.textContent = weatherData.weather;
-        
-        // Choose icon based on weather
-        if (weatherData.weather === 'snowing') {
-          iconElement.src = 'https://www.example.com/snow-icon.png';
-          animationElement.classList.add('snowfall');
-        } else if (weatherData.weather === 'clear') {
-          iconElement.src = 'https://www.example.com/sun-icon.png';
-          animationElement.classList.remove('snowfall');
+    function renderSection(mountain, weather) {
+      const section = document.createElement('div');
+      section.className = 'mountain-section';
+      section.style.background = getBackgroundColor(weather?.is_day);
+
+      const info = document.createElement('div');
+      info.className = 'mountain-info';
+      info.innerHTML = `
+        <h1>${mountain.name}</h1>
+        <p>${mountain.height} m</p>
+        <p>${weather ? `${weather.temperature_2m}°C, Code ${weather.weather_code}` : 'Weather unavailable'}</p>
+      `;
+      section.appendChild(info);
+
+      if (weather && weather.weather_code >= 60 && weather.weather_code < 70) {
+        const animation = document.createElement('div');
+        animation.className = 'weather-animation';
+        for (let i = 0; i < 20; i++) {
+          animation.appendChild(createSnow());
         }
-
-        // Change background color based on time of day
-        if (weatherData.timeOfDay === 'night') {
-          mountain.classList.add('mountain-nighttime');
-          mountain.classList.remove('mountain-daytime');
-        } else {
-          mountain.classList.add('mountain-daytime');
-          mountain.classList.remove('mountain-nighttime');
-        }
+        section.appendChild(animation);
       }
 
-      // Initialize weather data for each mountain
-      mountains.forEach(mountain => {
-        updateMountainWeather(mountain);
-      });
-    });
+      app.appendChild(section);
+    }
+
+    async function init() {
+      for (const mountain of mountains) {
+        const weather = await getWeather(mountain.lat, mountain.lon);
+        renderSection(mountain, weather);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
