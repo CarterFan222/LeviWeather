@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeviWeather</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+    .mountain-list {
+      width: 100%;
+      max-width: 480px;
+      margin-top: 20px;
+      padding: 10px;
+    }
+    .mountain {
+      background-color: #fff;
+      border-radius: 10px;
+      margin: 10px 0;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .mountain h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    .mountain p {
+      font-size: 1.1rem;
+      color: #555;
+    }
+    .mountain .weather {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .weather-icon {
+      width: 50px;
+      height: 50px;
+    }
+    .animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .mountain.in-view .animation {
+      opacity: 1;
+    }
+    .snowfall {
+      background: url('https://www.example.com/snowfall.png') center center no-repeat;
+      animation: snow 5s infinite linear;
+    }
+    @keyframes snow {
+      from {
+        top: -10%;
+      }
+      to {
+        top: 100%;
+      }
+    }
+    .mountain-daytime {
+      background-color: #87CEEB;
+    }
+    .mountain-nighttime {
+      background-color: #4B0082;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LeviWeather</h1>
+    <p>Mountain Weather Data Sorted by Height</p>
+  </header>
+  
+  <div class="mountain-list">
+    <div class="mountain" id="everest">
+      <h3>Mount Everest</h3>
+      <p>Height: 8,848.86 m</p>
+      <div class="weather">
+        <p>Snowing</p>
+        <img class="weather-icon" src="https://www.example.com/snow-icon.png" alt="Snow">
+      </div>
+      <div class="animation snowfall"></div>
+    </div>
+    <div class="mountain" id="k2">
+      <h3>K2</h3>
+      <p>Height: 8,611 m</p>
+      <div class="weather">
+        <p>Clear Skies</p>
+        <img class="weather-icon" src="https://www.example.com/clear-icon.png" alt="Clear Skies">
+      </div>
+      <div class="animation"></div>
+    </div>
+    <!-- Add more mountains here... -->
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mountains = document.querySelectorAll('.mountain');
+      const mountainList = document.querySelector('.mountain-list');
+
+      // Listen for scroll event
+      mountainList.addEventListener('scroll', () => {
+        mountains.forEach(mountain => {
+          if (isInView(mountain)) {
+            mountain.classList.add('in-view');
+          } else {
+            mountain.classList.remove('in-view');
+          }
+        });
+      });
+
+      // Check if mountain is in the viewport
+      function isInView(element) {
+        const rect = element.getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= window.innerHeight;
+      }
+
+      // Fetch weather data
+      // Dummy API call (replace with a real API or scraped data on your server)
+      async function getWeatherData(mountainId) {
+        const data = {
+          Everest: { weather: 'snowing', timeOfDay: 'night' },
+          K2: { weather: 'clear', timeOfDay: 'day' },
+          // Add more mock data here...
+        };
+        return data[mountainId] || { weather: 'unknown', timeOfDay: 'day' };
+      }
+
+      // Update mountain weather information
+      async function updateMountainWeather(mountain) {
+        const mountainId = mountain.id;
+        const weatherData = await getWeatherData(mountainId);
+        
+        // Update UI based on weather
+        const weatherElement = mountain.querySelector('.weather p');
+        const iconElement = mountain.querySelector('.weather-icon');
+        const animationElement = mountain.querySelector('.animation');
+        
+        weatherElement.textContent = weatherData.weather;
+        
+        // Choose icon based on weather
+        if (weatherData.weather === 'snowing') {
+          iconElement.src = 'https://www.example.com/snow-icon.png';
+          animationElement.classList.add('snowfall');
+        } else if (weatherData.weather === 'clear') {
+          iconElement.src = 'https://www.example.com/sun-icon.png';
+          animationElement.classList.remove('snowfall');
+        }
+
+        // Change background color based on time of day
+        if (weatherData.timeOfDay === 'night') {
+          mountain.classList.add('mountain-nighttime');
+          mountain.classList.remove('mountain-daytime');
+        } else {
+          mountain.classList.add('mountain-daytime');
+          mountain.classList.remove('mountain-nighttime');
+        }
+      }
+
+      // Initialize weather data for each mountain
+      mountains.forEach(mountain => {
+        updateMountainWeather(mountain);
+      });
+    });
+  </script>
+</body>
+</html>
