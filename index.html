@@ -2,135 +2,406 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LeviWeather</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --day-bg: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
+      --night-bg: linear-gradient(to bottom, #1e3c72, #2a5298);
+      --dusk-bg: linear-gradient(to bottom, #483D8B, #2a5298);
+      --dawn-bg: linear-gradient(to bottom, #4b6cb7, #182848);
+      --card-bg: rgba(255, 255, 255, 0.1);
+      --border-glow: 1px solid rgba(255, 255, 255, 0.2);
+      --text-glow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
-    html, body {
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen;
-      overflow-x: hidden;
-      background: #111;
+
+    body, html {
+      font-family: 'Inter', sans-serif;
+      background: var(--dusk-bg);
       color: white;
+      overflow-x: hidden;
+      min-height: 100vh;
     }
-    .mountain-section {
+
+    header {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      transition: transform 0.3s ease;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: #3b0a75;
+      border-radius: 50%;
+      position: relative;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 60%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M12 2l.867 6.928h6.928L14.4 12l5.395 3.072h-6.928L12 22l-.867-6.928H4.205L9.6 12 4.205 8.928h6.928z"/></svg>');
+    }
+
+    .header-left h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      user-select: none;
+    }
+
+    .header-left span {
+      font-size: 0.85rem;
+      font-weight: 400;
+      opacity: 0.7;
+      user-select: none;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-right a {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: white;
+      font-weight: 800;
+      text-decoration: none;
+      user-select: none;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    .header-right a:hover {
+      opacity: 0.8;
+    }
+
+    .header-right img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      user-select: none;
+    }
+
+    main {
+      margin-top: 0;
+    }
+
+    section.mountain-section {
       height: 100vh;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
+      padding: 2rem;
+      transition: background 0.5s ease-in-out;
       text-align: center;
       position: relative;
-      transition: background 0.5s;
+      overflow: hidden;
+      scroll-snap-align: start;
     }
+
+    .gradient-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -2;
+      transition: background 1.5s ease-in-out;
+      pointer-events: none;
+    }
+
+    .cloud-layer {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: visible;
+    }
+
+    /* Clouds made of multiple circles */
+    .cloud {
+      position: absolute;
+      filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
+      opacity: 0.15;
+      user-select: none;
+      will-change: transform;
+    }
+    .cloud-circle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+    }
+
+    /* Cloud movement animation */
+    @keyframes moveCloud {
+      0% { transform: translateX(-200px); }
+      100% { transform: translateX(110vw); }
+    }
+
     .weather-animation {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       pointer-events: none;
-      z-index: 0;
-    }
-    .mountain-info {
-      position: relative;
       z-index: 1;
     }
+
+    .mountain-info {
+      z-index: 2;
+      background: var(--card-bg);
+      border: var(--border-glow);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      max-width: 90%;
+      user-select: none;
+      min-width: 280px;
+    }
+
+    .mountain-info h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      text-shadow: var(--text-glow);
+    }
+
+    .mountain-info p {
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin: 0.3rem 0;
+    }
+
     .snowflake {
       position: absolute;
+      font-size: 1.2rem;
+      animation: fall 6s linear infinite;
       color: white;
-      font-size: 1.5em;
-      animation: fall 5s linear infinite;
+      user-select: none;
+      will-change: transform;
     }
+
+    .ambient-snowflake {
+      position: absolute;
+      top: -2%;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.3);
+      animation: ambientFall linear infinite;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+    }
+
     @keyframes fall {
-      0% { transform: translateY(-100px); opacity: 1; }
+      0% { transform: translateY(-10%); opacity: 1; }
       100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    @keyframes ambientFall {
+      0% { transform: translateY(0) translateX(0); opacity: 0.3; }
+      100% { transform: translateY(120vh) translateX(10vw); opacity: 0; }
     }
   </style>
 </head>
 <body>
+  <header>
+    <div class="header-left">
+      <div class="logo" aria-label="LeviWeather logo"></div>
+      <div>
+        <h1>LeviWeather</h1>
+        <span>Mountain Weather Website</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <a href="https://github.com/RowanMartian" target="_blank" rel="noopener noreferrer" aria-label="RowanMartian GitHub">
+        <span>RowanMartian</span>
+        <img src="https://avatars.githubusercontent.com/u/193378969?v=4" alt="RowanMartian" />
+      </a>
+    </div>
+  </header>
 
-  <div id="app"></div>
+  <main id="app"></main>
 
   <script>
     const mountains = [
-      { name: "Mount Everest", height: 8848, lat: 27.9881, lon: 86.925 },
-      { name: "K2", height: 8611, lat: 35.8808, lon: 76.5155 },
-      { name: "Kangchenjunga", height: 8586, lat: 27.7025, lon: 88.1475 },
-      { name: "Lhotse", height: 8516, lat: 27.9617, lon: 86.933 },
-      { name: "Makalu", height: 8485, lat: 27.8897, lon: 87.0883 },
-      { name: "Cho Oyu", height: 8188, lat: 28.0942, lon: 86.6608 },
-      { name: "Dhaulagiri", height: 8167, lat: 28.6967, lon: 83.4875 },
-      { name: "Manaslu", height: 8163, lat: 28.5497, lon: 84.5614 },
-      { name: "Nanga Parbat", height: 8126, lat: 35.2372, lon: 74.5892 },
-      { name: "Annapurna I", height: 8091, lat: 28.5958, lon: 83.8203 },
-      { name: "Gasherbrum I", height: 8080, lat: 35.7242, lon: 76.6961 },
-      { name: "Broad Peak", height: 8051, lat: 35.8147, lon: 76.565 },
-      { name: "Gasherbrum II", height: 8035, lat: 35.7581, lon: 76.6536 },
-      { name: "Shishapangma", height: 8027, lat: 28.3536, lon: 85.7792 },
-      { name: "Gyachung Kang", height: 7952, lat: 28.1064, lon: 86.7425 }
+      { name: "Mount Everest", height: 8848, location: "Nepal/China", lat: 27.9881, lon: 86.925 },
+      { name: "K2", height: 8611, location: "Pakistan/China", lat: 35.8818, lon: 76.5133 },
+      { name: "Kangchenjunga", height: 8586, location: "Nepal/India", lat: 27.7025, lon: 88.1475 },
+      { name: "Lhotse", height: 8516, location: "Nepal/China", lat: 27.9617, lon: 86.933 },
+      { name: "Makalu", height: 8485, location: "Nepal/China", lat: 27.8897, lon: 87.0883 },
+      { name: "Cho Oyu", height: 8188, location: "Nepal/China", lat: 28.0942, lon: 86.6608 },
+      { name: "Dhaulagiri", height: 8167, location: "Nepal", lat: 28.6967, lon: 83.4878 },
+      { name: "Manaslu", height: 8163, location: "Nepal", lat: 28.5497, lon: 84.561 },
+      { name: "Nanga Parbat", height: 8126, location: "Pakistan", lat: 35.2372, lon: 74.5892 },
+      { name: "Annapurna", height: 8091, location: "Nepal", lat: 28.5958, lon: 83.8203 },
+      { name: "Gasherbrum I", height: 8080, location: "Pakistan/China", lat: 35.7242, lon: 76.6961 },
+      { name: "Broad Peak", height: 8051, location: "Pakistan/China", lat: 35.8147, lon: 76.565 },
+      { name: "Gasherbrum II", height: 8035, location: "Pakistan/China", lat: 35.7583, lon: 76.6533 },
+      { name: "Shishapangma", height: 8027, location: "China", lat: 28.3535, lon: 85.7792 },
+      { name: "Gyachung Kang", height: 7952, location: "Nepal/China", lat: 28.0892, lon: 86.7425 }
     ];
 
     const app = document.getElementById('app');
 
-    function createSnow() {
-      const flake = document.createElement('div');
-      flake.className = 'snowflake';
-      flake.style.left = Math.random() * 100 + 'vw';
-      flake.style.animationDuration = 2 + Math.random() * 3 + 's';
-      flake.innerText = '❄';
-      return flake;
-    }
-
-    async function getWeather(lat, lon) {
-      try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day`);
-        const data = await res.json();
-        return data.current;
-      } catch {
-        return null;
+    // Create ambient snowflakes on a section
+    function createAmbientSnow(section) {
+      for (let i = 0; i < 50; i++) {
+        const flake = document.createElement('div');
+        flake.className = 'ambient-snowflake';
+        flake.textContent = '❄';
+        flake.style.left = Math.random() * 100 + '%';
+        flake.style.animationDuration = (5 + Math.random() * 10) + 's';
+        flake.style.fontSize = (6 + Math.random() * 6) + 'px';
+        flake.style.animationDelay = (Math.random() * 15) + 's';
+        section.appendChild(flake);
       }
     }
 
-    function getBackgroundColor(isDay) {
-      return isDay ? '#4facfe' : '#2c3e50';
+    // Create a single cloud made of circles
+    function createCloud() {
+      const cloud = document.createElement('div');
+      cloud.className = 'cloud';
+      cloud.style.top = `${Math.random() * 60 + 10}%`;
+      // Instead of fixed left, randomize start left between -200px to 0 for variety
+      cloud.style.left = `${-200 + Math.random() * 200}px`;
+      cloud.style.animationDuration = `${80 + Math.random() * 40}s`;
+      cloud.style.animationTimingFunction = 'linear';
+      cloud.style.animationIterationCount = 'infinite';
+      cloud.style.animationName = 'moveCloud';
+      cloud.style.willChange = 'transform';
+
+      const circleConfigs = [
+        { width: 60, height: 60, top: 0, left: 20 },
+        { width: 40, height: 40, top: 10, left: 0 },
+        { width: 50, height: 50, top: 10, left: 50 },
+        { width: 35, height: 35, top: 20, left: 90 },
+      ];
+
+      circleConfigs.forEach(cfg => {
+        const circle = document.createElement('div');
+        circle.className = 'cloud-circle';
+        circle.style.width = cfg.width + 'px';
+        circle.style.height = cfg.height + 'px';
+        circle.style.top = cfg.top + 'px';
+        circle.style.left = cfg.left + 'px';
+        cloud.appendChild(circle);
+      });
+
+      return cloud;
     }
 
-    function renderSection(mountain, weather) {
-      const section = document.createElement('div');
+    // Add multiple clouds to the section, with randomized horizontal start positions
+    function addClouds(section) {
+      const layer = document.createElement('div');
+      layer.className = 'cloud-layer';
+
+      for (let i = 0; i < 6; i++) {
+        const cloud = createCloud();
+        // Spread out the animation delay randomly within 0-80s so clouds don't bunch
+        cloud.style.animationDelay = `${Math.random() * 80}s`;
+        layer.appendChild(cloud);
+      }
+
+      section.appendChild(layer);
+    }
+
+    // Return sky gradient by hour of day (simplified)
+    function getSkyGradient(hour) {
+      if (hour >= 6 && hour < 18) {
+        return 'linear-gradient(to bottom, #a1c4fd, #c2e9fb)';  // day
+      } else if (hour >= 18 && hour < 20) {
+        return 'linear-gradient(to bottom, #483D8B, #2a5298)';  // dusk
+      } else if (hour >= 4 && hour < 6) {
+        return 'linear-gradient(to bottom, #4b6cb7, #182848)';  // dawn
+      } else {
+        return 'linear-gradient(to bottom, #1e3c72, #2a5298)';  // night
+      }
+    }
+
+    // Render a mountain section with background, clouds, and info
+    function renderSection(mountain, index) {
+      const section = document.createElement('section');
       section.className = 'mountain-section';
-      section.style.background = getBackgroundColor(weather?.is_day);
+
+      // Calculate rough local hour using longitude (simplified)
+      const utcHour = new Date().getUTCHours();
+      const offset = Math.round(mountain.lon / 15);
+      let mountainHour = (utcHour + offset + 24) % 24;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'gradient-overlay';
+      overlay.style.background = getSkyGradient(mountainHour);
+      section.appendChild(overlay);
+
+      const weatherDiv = document.createElement('div');
+      weatherDiv.className = 'weather-animation';
+
+      // Simple snow effect for highest mountains
+      if (["Mount Everest", "K2", "Kangchenjunga"].includes(mountain.name)) {
+        for (let i = 0; i < 15; i++) {
+          const flake = document.createElement('div');
+          flake.className = 'snowflake';
+          flake.style.left = Math.random() * 100 + '%';
+          flake.style.animationDuration = (4 + Math.random() * 5) + 's';
+          flake.style.fontSize = (10 + Math.random() * 10) + 'px';
+          flake.textContent = '❄';
+          weatherDiv.appendChild(flake);
+        }
+      }
 
       const info = document.createElement('div');
       info.className = 'mountain-info';
-      info.innerHTML = `
-        <h1>${mountain.name}</h1>
-        <p>${mountain.height} m</p>
-        <p>${weather ? `${weather.temperature_2m}°C, Code ${weather.weather_code}` : 'Weather unavailable'}</p>
-      `;
+      info.innerHTML = `<h1>${mountain.name}</h1><p>${mountain.height} m</p><p>${mountain.location}</p>`;
+
+      section.appendChild(weatherDiv);
       section.appendChild(info);
 
-      if (weather && weather.weather_code >= 60 && weather.weather_code < 70) {
-        const animation = document.createElement('div');
-        animation.className = 'weather-animation';
-        for (let i = 0; i < 20; i++) {
-          animation.appendChild(createSnow());
-        }
-        section.appendChild(animation);
-      }
-
       app.appendChild(section);
+
+      addClouds(section);
+      createAmbientSnow(section);
     }
 
-    async function init() {
-      for (const mountain of mountains) {
-        const weather = await getWeather(mountain.lat, mountain.lon);
-        renderSection(mountain, weather);
-      }
+    function init() {
+      mountains.sort((a, b) => b.height - a.height);
+      mountains.forEach(renderSection);
     }
 
     init();
+
+    // Header hide on scroll
+    let lastScrollTop = 0;
+    const header = document.querySelector('header');
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.scrollY;
+      if (currentScroll > lastScrollTop && currentScroll > 50) {
+        header.style.transform = 'translateY(-100%)';
+      } else {
+        header.style.transform = 'translateY(0)';
+      }
+      lastScrollTop = currentScroll;
+    });
   </script>
 </body>
 </html>
