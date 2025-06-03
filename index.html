@@ -9,8 +9,6 @@
     :root {
       --day-bg: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
       --night-bg: linear-gradient(to bottom, #1e3c72, #2a5298);
-      --dusk-bg: linear-gradient(to bottom, #483D8B, #2a5298);
-      --dawn-bg: linear-gradient(to bottom, #4b6cb7, #182848);
       --card-bg: rgba(255, 255, 255, 0.1);
       --border-glow: 1px solid rgba(255, 255, 255, 0.2);
       --text-glow: 0 0 5px rgba(255, 255, 255, 0.3);
@@ -22,12 +20,11 @@
       padding: 0;
     }
 
-    body, html {
+    body {
       font-family: 'Inter', sans-serif;
-      background: var(--dusk-bg);
+      background: #000;
       color: white;
       overflow-x: hidden;
-      min-height: 100vh;
     }
 
     header {
@@ -59,6 +56,7 @@
       background-repeat: no-repeat;
       background-position: center;
       background-size: 60%;
+      /* White snowflake SVG as background image */
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M12 2l.867 6.928h6.928L14.4 12l5.395 3.072h-6.928L12 22l-.867-6.928H4.205L9.6 12 4.205 8.928h6.928z"/></svg>');
     }
 
@@ -103,10 +101,6 @@
       user-select: none;
     }
 
-    main {
-      margin-top: 0;
-    }
-
     section.mountain-section {
       height: 100vh;
       display: flex;
@@ -118,7 +112,6 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      scroll-snap-align: start;
     }
 
     .gradient-overlay {
@@ -127,7 +120,6 @@
       width: 100%; height: 100%;
       z-index: -2;
       transition: background 1.5s ease-in-out;
-      pointer-events: none;
     }
 
     .cloud-layer {
@@ -145,7 +137,6 @@
       filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
       opacity: 0.15;
       user-select: none;
-      will-change: transform;
     }
     .cloud-circle {
       position: absolute;
@@ -176,7 +167,6 @@
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
       max-width: 90%;
       user-select: none;
-      min-width: 280px;
     }
 
     .mountain-info h1 {
@@ -198,7 +188,6 @@
       animation: fall 6s linear infinite;
       color: white;
       user-select: none;
-      will-change: transform;
     }
 
     .ambient-snowflake {
@@ -210,7 +199,6 @@
       z-index: 0;
       pointer-events: none;
       user-select: none;
-      will-change: transform;
     }
 
     @keyframes fall {
@@ -264,7 +252,6 @@
 
     const app = document.getElementById('app');
 
-    // Create ambient snowflakes on a section
     function createAmbientSnow(section) {
       for (let i = 0; i < 50; i++) {
         const flake = document.createElement('div');
@@ -273,24 +260,22 @@
         flake.style.left = Math.random() * 100 + '%';
         flake.style.animationDuration = (5 + Math.random() * 10) + 's';
         flake.style.fontSize = (6 + Math.random() * 6) + 'px';
-        flake.style.animationDelay = (Math.random() * 15) + 's';
         section.appendChild(flake);
       }
     }
 
-    // Create a single cloud made of circles
+    // Create clouds out of multiple transparent circles for natural look
     function createCloud() {
       const cloud = document.createElement('div');
       cloud.className = 'cloud';
       cloud.style.top = `${Math.random() * 60 + 10}%`;
-      // Instead of fixed left, randomize start left between -200px to 0 for variety
-      cloud.style.left = `${-200 + Math.random() * 200}px`;
+      cloud.style.left = `${-150 + Math.random() * 100}px`;
       cloud.style.animationDuration = `${80 + Math.random() * 40}s`;
       cloud.style.animationTimingFunction = 'linear';
       cloud.style.animationIterationCount = 'infinite';
       cloud.style.animationName = 'moveCloud';
-      cloud.style.willChange = 'transform';
 
+      // Circles that compose the cloud shape
       const circleConfigs = [
         { width: 60, height: 60, top: 0, left: 20 },
         { width: 40, height: 40, top: 10, left: 0 },
@@ -311,42 +296,39 @@
       return cloud;
     }
 
-    // Add multiple clouds to the section, with randomized horizontal start positions
     function addClouds(section) {
       const layer = document.createElement('div');
       layer.className = 'cloud-layer';
 
+      // Create 6 clouds with varied delays
       for (let i = 0; i < 6; i++) {
         const cloud = createCloud();
-        // Spread out the animation delay randomly within 0-80s so clouds don't bunch
-        cloud.style.animationDelay = `${Math.random() * 80}s`;
+        cloud.style.animationDelay = `${i * 20}s`;
         layer.appendChild(cloud);
       }
-
       section.appendChild(layer);
     }
 
-    // Return sky gradient by hour of day (simplified)
     function getSkyGradient(hour) {
+      // More subtle gradient blending for day/night
       if (hour >= 6 && hour < 18) {
-        return 'linear-gradient(to bottom, #a1c4fd, #c2e9fb)';  // day
+        return 'linear-gradient(to bottom, #a1c4fd, #c2e9fb)';
       } else if (hour >= 18 && hour < 20) {
-        return 'linear-gradient(to bottom, #483D8B, #2a5298)';  // dusk
+        return 'linear-gradient(to bottom, #483D8B, #2a5298)'; // dusk purpleish
       } else if (hour >= 4 && hour < 6) {
-        return 'linear-gradient(to bottom, #4b6cb7, #182848)';  // dawn
+        return 'linear-gradient(to bottom, #4b6cb7, #182848)'; // dawn blue
       } else {
-        return 'linear-gradient(to bottom, #1e3c72, #2a5298)';  // night
+        return 'linear-gradient(to bottom, #1e3c72, #2a5298)'; // night
       }
     }
 
-    // Render a mountain section with background, clouds, and info
     function renderSection(mountain, index) {
       const section = document.createElement('section');
       section.className = 'mountain-section';
 
-      // Calculate rough local hour using longitude (simplified)
+      // Calculate hour for mountain's timezone roughly by lon (simplified)
       const utcHour = new Date().getUTCHours();
-      const offset = Math.round(mountain.lon / 15);
+      const offset = Math.round(mountain.lon / 15); // Rough offset
       let mountainHour = (utcHour + offset + 24) % 24;
 
       const overlay = document.createElement('div');
@@ -357,8 +339,9 @@
       const weatherDiv = document.createElement('div');
       weatherDiv.className = 'weather-animation';
 
-      // Simple snow effect for highest mountains
-      if (["Mount Everest", "K2", "Kangchenjunga"].includes(mountain.name)) {
+      // Simple snow effect for demonstration (you could add real weather logic)
+      if (mountain.name === 'Mount Everest' || mountain.name === 'K2' || mountain.name === 'Kangchenjunga') {
+        // Add falling snow flakes
         for (let i = 0; i < 15; i++) {
           const flake = document.createElement('div');
           flake.className = 'snowflake';
@@ -378,7 +361,6 @@
       section.appendChild(info);
 
       app.appendChild(section);
-
       addClouds(section);
       createAmbientSnow(section);
     }
@@ -390,14 +372,16 @@
 
     init();
 
-    // Header hide on scroll
+    // Header hide on scroll logic
     let lastScrollTop = 0;
     const header = document.querySelector('header');
     window.addEventListener('scroll', () => {
       const currentScroll = window.scrollY;
       if (currentScroll > lastScrollTop && currentScroll > 50) {
+        // scrolling down
         header.style.transform = 'translateY(-100%)';
       } else {
+        // scrolling up
         header.style.transform = 'translateY(0)';
       }
       lastScrollTop = currentScroll;
